@@ -1,0 +1,16 @@
+{
+  "name": "rave-news",
+  "version": "1.0.0",
+  "description": "Rave-News is a project dedicated to connecting and informing rave and festival enthusiasts around the globe. Our mission is to provide a platform where electronic music lovers can discover amazing events, from indoor parties 🎶 to large outdoor festivals 🌳.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev"
+  },
+  "author": "Simone Amorim",
+  "license": "MIT",
+  "dependencies": {
+    "next": "^15.5.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  }
+}
