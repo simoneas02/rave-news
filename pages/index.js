@@ -1,13 +1,23 @@
+import styles from './index.module.css'
+
 function Home() {
   return (
-    <div>
-      <h1>🔥 HOT RAVE ALERT 🪩💋</h1>
+    <div className={` ${styles.heart_bg}`}>
+      <div className={styles.container}>
+        <h1 className={styles.container__title}>🔥 Heyyyy my BABE 💋</h1>
 
-      <p>The bass was deep, the lights were wild, but nothing hit harder than the thought of you.</p>
+        <p className={styles.container__text}>
+          Look at YOUUUU!!! 🤩🤩🤩
+        </p>
 
-      <p>You're the rhythm my body can't stop craving, the drop that makes everything else disappear.</p>
+        <p className={styles.container__text}>
+          Look at YOUUUU!!! 👀👀👀
+        </p>
+        <p className={styles.container__text}>You're so fucking beautiful  🫠 </p>
+        <p className={styles.container__text}>And <strong className={styles.container__text_strong}>PLEASE</strong> put that beautiful smile on your face and remember: I only want to see you happy, filled with joy and love! 😍 </p>
+        <p className={styles.container__text}>I can't wait to see you again  💟 </p>
 
-      <p>Babe, you’re the rave I never want to leave 😈💫</p>
+      </div>
     </div>
   );
 }

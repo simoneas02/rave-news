@@ -1,0 +1,55 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display&family=Open+Sans:wght@400&display=swap");
+
+.container {
+  font-family: "Arial", sans-serif;
+  background-color: #f9f3f5;
+  padding: 10px;
+
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  border-radius: 5%;
+}
+
+.container__title {
+  font-size: 3em;
+  color: rgb(218, 97, 255);
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  margin-top: 10px;
+}
+
+.container__text {
+  width: 100%;
+  max-width: 500px;
+  font-family: "Open Sans", sans-serif;
+  font-size: 1.5em;
+  line-height: 1.6;
+  margin: 10px 0;
+  transition: color 0.3s ease;
+}
+
+.container__text_strong {
+  color: rgb(218, 97, 255);
+}
+
+.container__text:hover {
+  color: rgb(218, 97, 255);
+}
+
+.heart_bg {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+
+  height: 100vh;
+  width: 100vw;
+  background-image: url("./falling-hearts.png");
+  background-size: cover;
+  background-position: center;
+  background-color: #f9f3f5;
+  padding-left: 40px;
+  border-radius: 15px;
+}
