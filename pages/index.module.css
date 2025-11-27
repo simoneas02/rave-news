@@ -46,7 +46,7 @@
 
   height: 100vh;
   width: 100vw;
-  background-image: url("./falling-hearts.png");
+  background-image: url("/falling-hearts.png");
   background-size: cover;
   background-position: center;
   background-color: #f9f3f5;
