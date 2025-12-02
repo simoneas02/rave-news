@@ -19,6 +19,6 @@ The platform addresses the need for a central, authentic source of information, 
 
 ## Technical Stack
 
-- **Frontend:** React/ Next.js/ Typescript
+- **Frontend:** React/ Next.js
 - **Styling:** CSS Module
-- **Backend/Database:** Node.js, PostgreSQL
+- **Backend/Database:** Node.js, PostgreSQL, pg, node-pg-migrate
