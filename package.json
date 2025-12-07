@@ -11,12 +11,16 @@
     "test:watch": "jest --watchAll",
     "docker-up": "docker compose -f infra/compose.yaml up -d",
     "docker-down": "docker compose -f infra/compose.yaml down",
-    "docker-stop": "docker compose -f infra/compose.yaml stop"
+    "docker-stop": "docker compose -f infra/compose.yaml stop",
+    "migration:create": "node-pg-migrate -m infra/migrations create",
+    "migration:up": "node-pg-migrate -m infra/migrations --envPath .env.development up"
   },
   "author": "Simone Amorim",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^17.2.3",
     "next": "^15.5.6",
+    "node-pg-migrate": "^7.9.1",
     "pg": "^8.16.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
