@@ -12,7 +12,7 @@ test("POST statusURL should return 200", async () => {
   const response1 = await fetch(`${LOCALHOST}${MIGRATIONS_URL}`, {
     method: "POST",
   });
-  expect(response1.status).toBe(200);
+  expect(response1.status).toBe(201);
 
   const response1Body = await response1.json();
 
