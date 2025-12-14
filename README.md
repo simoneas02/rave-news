@@ -21,4 +21,4 @@ The platform addresses the need for a central, authentic source of information, 
 
 - **Frontend:** React/ Next.js
 - **Styling:** CSS Module
-- **Backend/Database:** Node.js, PostgreSQL, pg, node-pg-migrate
+- **Backend/Database:** Node.js, PostgreSQL, pg, node-pg-migrate, Neon
