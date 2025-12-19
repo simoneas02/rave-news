@@ -1,8 +1,12 @@
-const LOCALHOST = "http://localhost:3000";
-const STATUS_URL = "/api/v1/status";
+import orchestrator from "tests/orchestrator";
+export const STATUS_URL = `${process.env.API_URL}/status`;
+
+beforeAll(async () => {
+  await orchestrator.waitForAllServices();
+});
 
 test("GET statusURL should return 200", async () => {
-  const response = await fetch(`${LOCALHOST}${STATUS_URL}`);
+  const response = await fetch(STATUS_URL);
   expect(response.status).toBe(200);
 
   const responseBody = await response.json();
