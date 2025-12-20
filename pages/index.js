@@ -10,7 +10,7 @@ function Home() {
 
         <p className={styles.container__text}>Look at YOUUUU!!! 👀👀👀</p>
         <p className={styles.container__text}>
-          You're so fucking beautiful 🫠{" "}
+          You are so fucking beautiful 🫠{" "}
         </p>
         <p className={styles.container__text}>
           And <strong className={styles.container__text_strong}>PLEASE</strong>{" "}
@@ -18,7 +18,7 @@ function Home() {
           you happy, filled with joy and love! 😍{" "}
         </p>
         <p className={styles.container__text}>
-          I can't wait to see you again 💟{" "}
+          I cannot wait to see you again 💟{" "}
         </p>
       </div>
     </div>

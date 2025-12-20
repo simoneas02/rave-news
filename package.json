@@ -7,6 +7,7 @@
     "dev": "npm run docker:up && npm run wait-for-postgres && npm run migration:up && next dev",
     "lint:prettier:check": "prettier --check .",
     "lint:prettier:fix": "prettier --write .",
+    "lint:eslint:check": "npx eslint .",
     "test": "npm run docker:up && concurrently --n next,jest --hide next -k -s command-jest \"next dev\" \"jest --runInBand\"",
     "test:watch": "jest --watchAll --runInBand",
     "docker:up": "docker compose -f infra/compose.yaml up -d",
@@ -29,6 +30,9 @@
   },
   "devDependencies": {
     "concurrently": "9.2.1",
+    "eslint": "^9.39.2",
+    "eslint-config-next": "^16.1.0",
+    "eslint-config-prettier": "^10.1.8",
     "jest": "30.2.0",
     "prettier": "3.7.4"
   }
