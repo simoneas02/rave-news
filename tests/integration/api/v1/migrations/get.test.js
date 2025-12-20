@@ -1,15 +1,15 @@
 import database from "infra/database.js";
+import orchestrator from "tests/orchestrator";
 
-beforeAll(cleanDatabase);
-async function cleanDatabase() {
+beforeAll(async () => {
+  await orchestrator.waitForAllServices();
   await database.query("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
-}
+});
 
-const LOCALHOST = "http://localhost:3000";
-const MIGRATIONS_URL = "/api/v1/migrations";
+export const MIGRATIONS_URL = `${process.env.API_URL}/migrations`;
 
 test("GET statusURL should return 200", async () => {
-  const response = await fetch(`${LOCALHOST}${MIGRATIONS_URL}`);
+  const response = await fetch(MIGRATIONS_URL);
   expect(response.status).toBe(200);
 
   const responseBody = await response.json();
