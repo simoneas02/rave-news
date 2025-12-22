@@ -15,7 +15,8 @@
     "docker:stop": "docker compose -f infra/compose.yaml stop",
     "migration:create": "node-pg-migrate -m infra/migrations create",
     "migration:up": "node-pg-migrate -m infra/migrations --envPath .env.development up",
-    "wait-for-postgres": "node infra/scripts/wait-for-postgres.js"
+    "wait-for-postgres": "node infra/scripts/wait-for-postgres.js",
+    "prepare": "husky"
   },
   "author": "Simone Amorim",
   "license": "MIT",
@@ -35,6 +36,7 @@
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.1.0",
     "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
     "jest": "30.2.0",
     "prettier": "3.7.4"
   }
