@@ -8,11 +8,10 @@ async function fetchAPI(key) {
 }
 
 function UpdatedAt({ isLoading, data }) {
-  const { updated_at } = data;
-
   let updatedAtText = "Carregando...";
 
   if (!isLoading && data) {
+    const { updated_at } = data;
     updatedAtText = new Date(updated_at).toLocaleString("pt-BR");
   }
 
@@ -20,12 +19,12 @@ function UpdatedAt({ isLoading, data }) {
 }
 
 function DatabaseStatus({ isLoading, data }) {
-  const { version, max_connections, opened_connetions, database_name } =
-    data.dependencies;
-
   let databaseStatusInformation = "Carregando...";
 
   if (!isLoading && data) {
+    const { version, max_connections, opened_connetions, database_name } =
+      data.dependencies;
+
     databaseStatusInformation = (
       <>
         <div>Version: {version}</div>
