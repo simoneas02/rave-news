@@ -3,7 +3,7 @@ import { MIGRATIONS_URL } from "./get.test";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
-  await orchestrator.clearDatabase;
+  await orchestrator.clearDatabase();
 });
 
 describe("POST /api/v1/migrations", () => {
