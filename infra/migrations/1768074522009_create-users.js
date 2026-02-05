@@ -1,5 +1,3 @@
-const { unique } = require("next/dist/build/utils");
-
 exports.up = (pgm) => {
   pgm.createTable("users", {
     id: {
