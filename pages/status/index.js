@@ -22,13 +22,13 @@ function DatabaseStatus({ isLoading, data }) {
   let databaseStatusInformation = "Carregando...";
 
   if (!isLoading && data) {
-    const { version, max_connections, opened_connetions, database_name } =
+    const { version, max_connections, opened_connections, database_name } =
       data.dependencies;
 
     databaseStatusInformation = (
       <>
         <div>Version: {version}</div>
-        <div>Opened Connections: {opened_connetions}</div>
+        <div>Opened Connections: {opened_connections}</div>
         <div>Max Connections: {max_connections}</div>
         <div>Database Name: {database_name}</div>
       </>
