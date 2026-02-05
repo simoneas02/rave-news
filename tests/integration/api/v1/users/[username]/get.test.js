@@ -93,7 +93,7 @@ describe("GET /api/v1/users/username", () => {
         message:
           "The username 'username-not-registered' was not found in the system.",
         action: "Please check if the username is correct.",
-        statusCode: 404,
+        status_code: 404,
       });
     });
   });

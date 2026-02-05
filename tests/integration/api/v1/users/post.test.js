@@ -78,7 +78,7 @@ describe("POST /api/v1/users", () => {
         message:
           "The email 'DuplicatedEmail@gmail.com' already exists in the system.",
         action: "Please use another email address to register.",
-        statusCode: 400,
+        status_code: 400,
       });
     });
 
@@ -118,7 +118,7 @@ describe("POST /api/v1/users", () => {
         message:
           "The username 'DuplicatedUsername' already exists in the system.",
         action: "Please use another username to register.",
-        statusCode: 400,
+        status_code: 400,
       });
     });
   });
