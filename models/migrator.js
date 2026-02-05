@@ -1,10 +1,10 @@
 import migrationRunner from "node-pg-migrate";
-import { resolve } from "node:path";
+import { join } from "node:path";
 import database from "infra/database";
 
 const defaultMigrationOptions = {
   dryRun: true,
-  dir: resolve("infra", "migrations"),
+  dir: join(process.cwd(), "infra", "migrations"),
   direction: "up",
   log: () => {},
   migrationsTable: "pgmigrations",
