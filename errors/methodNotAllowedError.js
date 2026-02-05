@@ -12,7 +12,7 @@ export class MethodNotAllowedError extends Error {
       name: this.name,
       message: this.message,
       action: this.action,
-      statusCode: this.statusCode,
+      status_code: this.statusCode,
     };
   }
 }
