@@ -1,4 +1,5 @@
 import database from "infra/database";
+import password from "models/password";
 import { ValidationError } from "errors/validationError";
 import { NotFoundError } from "errors/notFoundError";
 
@@ -68,6 +69,12 @@ async function validateUniqueUsername(username) {
   }
 }
 
+async function hashPasswordInObject(userIputValues) {
+  const hashPassword = await password.hash(userIputValues.password);
+
+  userIputValues.password = hashPassword;
+}
+
 async function runSelectQuery(username) {
   const results = await database.query({
     text: `
@@ -100,6 +107,7 @@ async function create(userIputValues) {
 
   await validateUniqueEmail(email);
   await validateUniqueUsername(username);
+  await hashPasswordInObject(userIputValues);
 
   const newUser = await runInsertQuery(userIputValues);
   return newUser;
