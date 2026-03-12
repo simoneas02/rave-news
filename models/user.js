@@ -39,7 +39,7 @@ async function validateUniqueEmail(email) {
   if (isDuplicatedEmail) {
     throw new ValidationError({
       message: `The email '${email}' already exists in the system.`,
-      action: "Please use another email address to register.",
+      action: "Please use another email address to perform this operation.",
     });
   }
 }
@@ -64,7 +64,7 @@ async function validateUniqueUsername(username) {
   if (isDuplicatedUsername) {
     throw new ValidationError({
       message: `The username '${username}' already exists in the system.`,
-      action: "Please use another username to register.",
+      action: "Please use another username to perform this operation.",
     });
   }
 }
@@ -102,15 +102,59 @@ async function runSelectQuery(username) {
   return results.rows[0];
 }
 
+async function runUpdateQuery(userWithNewValues) {
+  const { id, username, email, password } = userWithNewValues;
+
+  const results = await database.query({
+    text: `
+      UPDATE
+        users
+      SET
+        username = $2,
+        email = $3,
+        password = $4,
+        updated_at = timezone('utc', now())
+      WHERE
+        id = $1
+      RETURNING
+        *
+    `,
+    values: [id, username, email, password],
+  });
+
+  return results.rows[0];
+}
+
 async function create(userIputValues) {
   const { username, email } = userIputValues;
 
-  await validateUniqueEmail(email);
   await validateUniqueUsername(username);
+  await validateUniqueEmail(email);
   await hashPasswordInObject(userIputValues);
 
   const newUser = await runInsertQuery(userIputValues);
   return newUser;
+}
+
+async function update(username, userImputValues) {
+  const currentUser = await findeOneByUsername(username);
+
+  if ("username" in userImputValues) {
+    await validateUniqueUsername(userImputValues.username);
+  }
+
+  if ("email" in userImputValues) {
+    await validateUniqueEmail(userImputValues.email);
+  }
+
+  if ("password" in userImputValues) {
+    await hashPasswordInObject(userImputValues);
+  }
+
+  const userWithNewValues = { ...currentUser, ...userImputValues };
+  const updatedUser = await runUpdateQuery(userWithNewValues);
+
+  return updatedUser;
 }
 
 async function findeOneByUsername(username) {
@@ -122,5 +166,6 @@ async function findeOneByUsername(username) {
 const user = {
   create,
   findeOneByUsername,
+  update,
 };
 export default user;

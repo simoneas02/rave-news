@@ -92,7 +92,7 @@ describe("POST /api/v1/users", () => {
         name: "ValidationError",
         message:
           "The email 'DuplicatedEmail@gmail.com' already exists in the system.",
-        action: "Please use another email address to register.",
+        action: "Please use another email address to perform this operation.",
         status_code: 400,
       });
     });
@@ -132,7 +132,7 @@ describe("POST /api/v1/users", () => {
         name: "ValidationError",
         message:
           "The username 'DuplicatedUsername' already exists in the system.",
-        action: "Please use another username to register.",
+        action: "Please use another username to perform this operation.",
         status_code: 400,
       });
     });
