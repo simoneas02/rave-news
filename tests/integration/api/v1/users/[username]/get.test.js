@@ -12,73 +12,55 @@ beforeAll(async () => {
 describe("GET /api/v1/users/username", () => {
   describe("Anonymous user", () => {
     test("With exact case match", async () => {
-      const response1 = await fetch(USERS_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: "some-user",
-          email: "some-user@gmail.com",
-          password: "some-user",
-        }),
+      const createdUser = await orchestrator.createUser({
+        username: "CaseMatch",
       });
 
-      expect(response1.status).toBe(201);
+      const response = await fetch(`${USERS_URL}/CaseMatch`);
 
-      const response2 = await fetch(`${USERS_URL}/some-user`);
+      expect(response.status).toBe(200);
 
-      expect(response2.status).toBe(200);
+      const responseBody = await response.json();
+      const { email } = createdUser;
 
-      const responseBody2 = await response2.json();
-
-      expect(responseBody2).toEqual({
-        id: responseBody2.id,
-        username: "some-user",
-        email: "some-user@gmail.com",
-        password: responseBody2.password,
-        created_at: responseBody2.created_at,
-        updated_at: responseBody2.updated_at,
+      expect(responseBody).toEqual({
+        id: responseBody.id,
+        username: "CaseMatch",
+        email,
+        password: responseBody.password,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
       });
 
-      expect(uuidVersion(responseBody2.id)).toBe(4);
-      expect(Date.parse(responseBody2.created_at)).not.toBeNaN();
-      expect(Date.parse(responseBody2.updated_at)).not.toBeNaN();
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test("With case mismatch", async () => {
-      const response1 = await fetch(USERS_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: "SomeUser",
-          email: "SomeUser@gmail.com",
-          password: "SomeUser",
-        }),
+      const createdUser = await orchestrator.createUser({
+        username: "CaseMismatch",
       });
 
-      expect(response1.status).toBe(201);
+      const response = await fetch(`${USERS_URL}/casemismatch`);
 
-      const response2 = await fetch(`${USERS_URL}/someuser`);
+      expect(response.status).toBe(200);
 
-      expect(response2.status).toBe(200);
+      const responseBody = await response.json();
+      const { email } = createdUser;
 
-      const responseBody2 = await response2.json();
-
-      expect(responseBody2).toEqual({
-        id: responseBody2.id,
-        username: "SomeUser",
-        email: "SomeUser@gmail.com",
-        password: responseBody2.password,
-        created_at: responseBody2.created_at,
-        updated_at: responseBody2.updated_at,
+      expect(responseBody).toEqual({
+        id: responseBody.id,
+        username: "CaseMismatch",
+        email,
+        password: responseBody.password,
+        created_at: responseBody.created_at,
+        updated_at: responseBody.updated_at,
       });
 
-      expect(uuidVersion(responseBody2.id)).toBe(4);
-      expect(Date.parse(responseBody2.created_at)).not.toBeNaN();
-      expect(Date.parse(responseBody2.updated_at)).not.toBeNaN();
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
     });
 
     test("With username not registered", async () => {
