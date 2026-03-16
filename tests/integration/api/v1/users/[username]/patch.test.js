@@ -32,29 +32,13 @@ describe("PATCH /api/v1/users/username", () => {
     });
 
     test("With duplicated 'username'", async () => {
-      const user1Response = await fetch(USERS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: "user1",
-          email: "user1@gmail.com",
-          password: "user1",
-        }),
+      await orchestrator.createUser({
+        username: "user1",
       });
 
-      expect(user1Response.status).toBe(201);
-
-      const user2Response = await fetch(USERS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: "user2",
-          email: "user2@gmail.com",
-          password: "user2",
-        }),
+      await orchestrator.createUser({
+        username: "user2",
       });
-
-      expect(user2Response.status).toBe(201);
 
       const updatedUser2 = await fetch(`${USERS_URL}/user2`, {
         method: "PATCH",
@@ -77,31 +61,17 @@ describe("PATCH /api/v1/users/username", () => {
     });
 
     test("With duplicated 'email'", async () => {
-      const email1Response = await fetch(USERS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: "email1",
-          email: "email1@gmail.com",
-          password: "email1",
-        }),
+      await orchestrator.createUser({
+        email: "email1@gmail.com",
       });
 
-      expect(email1Response.status).toBe(201);
-
-      const email2Response = await fetch(USERS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: "email2",
-          email: "email2@gmail.com",
-          password: "email2",
-        }),
+      const createdUser2 = await orchestrator.createUser({
+        email: "email2@gmail.com",
       });
 
-      expect(email2Response.status).toBe(201);
+      const { username } = createdUser2;
 
-      const updatedEmail2 = await fetch(`${USERS_URL}/email2`, {
+      const updatedEmail2 = await fetch(`${USERS_URL}/${username}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -122,17 +92,9 @@ describe("PATCH /api/v1/users/username", () => {
     });
 
     test("With unique username", async () => {
-      const uniqueUser1 = await fetch(USERS_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: "uniqueUser1",
-          email: "uniqueUser1@gmail.com",
-          password: "uniqueUser1",
-        }),
+      const createdUser = await orchestrator.createUser({
+        username: "uniqueUser1",
       });
-
-      expect(uniqueUser1.status).toBe(201);
 
       const response = await fetch(`${USERS_URL}/uniqueUser1`, {
         method: "PATCH",
@@ -146,11 +108,12 @@ describe("PATCH /api/v1/users/username", () => {
 
       const responseBody = await response.json();
       const { id, password, created_at, updated_at } = responseBody;
+      const { email } = createdUser;
 
       expect(responseBody).toEqual({
         id,
         username: "uniqueUser2",
-        email: "uniqueUser1@gmail.com",
+        email,
         password,
         created_at,
         updated_at,
@@ -164,19 +127,13 @@ describe("PATCH /api/v1/users/username", () => {
   });
 
   test("With unique email", async () => {
-    const uniqueEmail1 = await fetch(USERS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: "uniqueEmail1",
-        email: "uniqueEmail1@gmail.com",
-        password: "uniqueEmail1",
-      }),
+    const createdUser = await orchestrator.createUser({
+      email: "uniqueEmail1@gmail.com",
     });
 
-    expect(uniqueEmail1.status).toBe(201);
+    const { username } = createdUser;
 
-    const response = await fetch(`${USERS_URL}/uniqueEmail1`, {
+    const response = await fetch(`${USERS_URL}/${username}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: "uniqueEmail2@gmail.com" }),
@@ -189,7 +146,7 @@ describe("PATCH /api/v1/users/username", () => {
 
     expect(responseBody).toEqual({
       id,
-      username: "uniqueEmail1",
+      username,
       email: "uniqueEmail2@gmail.com",
       password,
       created_at,
@@ -203,19 +160,13 @@ describe("PATCH /api/v1/users/username", () => {
   });
 
   test("With unique password", async () => {
-    const uniquePassword1 = await fetch(USERS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: "uniquePassword1",
-        email: "uniquePassword1@gmail.com",
-        password: "uniquePassword1",
-      }),
+    const createdUser = await orchestrator.createUser({
+      password: "uniquePassword1",
     });
 
-    expect(uniquePassword1.status).toBe(201);
+    const { username, email } = createdUser;
 
-    const response = await fetch(`${USERS_URL}/uniquePassword1`, {
+    const response = await fetch(`${USERS_URL}/${username}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password: "uniquePassword2" }),
@@ -228,8 +179,8 @@ describe("PATCH /api/v1/users/username", () => {
 
     expect(responseBody).toEqual({
       id,
-      username: "uniquePassword1",
-      email: "uniquePassword1@gmail.com",
+      username,
+      email,
       password: responseBody.password,
       created_at,
       updated_at,
@@ -240,7 +191,7 @@ describe("PATCH /api/v1/users/username", () => {
     expect(Date.parse(updated_at)).not.toBeNaN();
     expect(updated_at > created_at).toBe(true);
 
-    const userInDatabase = await user.findeOneByUsername("uniquePassword1");
+    const userInDatabase = await user.findeOneByUsername(username);
     const correctPasswordMatch = await password.compare(
       "uniquePassword2",
       userInDatabase.password,
