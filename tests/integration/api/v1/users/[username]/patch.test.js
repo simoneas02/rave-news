@@ -84,7 +84,7 @@ describe("PATCH /api/v1/users/username", () => {
       const responseBody = await updatedEmail2.json();
 
       expect(responseBody).toEqual({
-        action: "Please use another email address to perform this operation.",
+        action: "Please use another email to perform this operation.",
         message: "The email 'email1@gmail.com' already exists in the system.",
         name: "ValidationError",
         status_code: 400,
