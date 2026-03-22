@@ -12,7 +12,7 @@ async function runInsertQuery({ username, email, password }) {
         ($1, $2, $3)
       RETURNING
         *
-      `,
+      ;`,
     values: [username, email, password],
   });
 
@@ -28,7 +28,7 @@ async function validateUniqueAttribute({ attributeName, attributeValue }) {
         users
       WHERE
         LOWER(${attributeName}) = LOWER($1)
-      `,
+      ;`,
     values: [attributeValue],
   });
 
@@ -59,16 +59,43 @@ async function runSelectByAttribute({ attributeName, attributeValue }) {
         LOWER(${attributeName}) = LOWER($1)
       LIMIT
         1
-      `,
+      ;`,
     values: [attributeValue],
   });
 
-  const isUsernameNotFound = results.rowCount === 0;
+  const isUserNotFound = results.rowCount === 0;
 
-  if (isUsernameNotFound) {
+  if (isUserNotFound) {
     throw new NotFoundError({
       message: `The ${attributeName} '${attributeValue}' was not found in the system.`,
       action: `Please check if the ${attributeName} is correct.`,
+    });
+  }
+
+  return results.rows[0];
+}
+
+async function runSelectById(id) {
+  const results = await database.query({
+    text: `
+      SELECT
+        *
+      FROM
+        users
+      WHERE
+        id = $1
+      LIMIT
+        1
+      ;`,
+    values: [id],
+  });
+
+  const isUserNotFound = results.rowCount === 0;
+
+  if (isUserNotFound) {
+    throw new NotFoundError({
+      message: `The id '${id}' was not found in the system.`,
+      action: `Please check if the id is correct.`,
     });
   }
 
@@ -89,7 +116,7 @@ async function runUpdateQuery({ id, username, email, password }) {
         id = $1
       RETURNING
         *
-    `,
+    ;`,
     values: [id, username, email, password],
   });
 
@@ -143,21 +170,21 @@ async function update(username, userInputValues) {
 }
 
 async function findeOneByUsername(username) {
-  const userFound = await runSelectByAttribute({
+  return await runSelectByAttribute({
     attributeName: "username",
     attributeValue: username,
   });
-
-  return userFound;
 }
 
 async function findOneByEmail(email) {
-  const userFound = await runSelectByAttribute({
+  return await runSelectByAttribute({
     attributeName: "email",
     attributeValue: email,
   });
+}
 
-  return userFound;
+async function findOneById(id) {
+  return await runSelectById(id);
 }
 
 const user = {
@@ -165,5 +192,6 @@ const user = {
   update,
   findeOneByUsername,
   findOneByEmail,
+  findOneById,
 };
 export default user;

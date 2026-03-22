@@ -106,8 +106,7 @@ describe("POST /api/v1/sessions", () => {
 
       const responseBody = await response.json();
 
-      const { created_at, expires_at, id, token, updated_at, user_id } =
-        responseBody;
+      const { created_at, expires_at, id, token, updated_at } = responseBody;
 
       expect(responseBody).toEqual({
         created_at,
@@ -132,10 +131,10 @@ describe("POST /api/v1/sessions", () => {
 
       const parsedSetCookie = setCookieParser(response, { map: true });
 
-      expect(parsedSetCookie.session_id).toEqual({
+      expect(parsedSetCookie.session_token).toEqual({
         httpOnly: true,
         maxAge: session.EXPIRATION_IN_MS / 1000,
-        name: "session_id",
+        name: "session_token",
         path: "/",
         value: responseBody.token,
       });
