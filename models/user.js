@@ -3,9 +3,7 @@ import password from "models/password";
 import { ValidationError } from "errors/validationError";
 import { NotFoundError } from "errors/notFoundError";
 
-async function runInsertQuery(userIputValues) {
-  const { username, email, password } = userIputValues;
-
+async function runInsertQuery({ username, email, password }) {
   const results = await database.query({
     text: `
       INSERT INTO 
@@ -21,7 +19,7 @@ async function runInsertQuery(userIputValues) {
   return results.rows[0];
 }
 
-async function validateUniqueEmail(email) {
+async function validateUniqueAttribute({ attributeName, attributeValue }) {
   const results = await database.query({
     text: `
       SELECT 
@@ -29,53 +27,28 @@ async function validateUniqueEmail(email) {
       FROM
         users
       WHERE
-        LOWER(email) = LOWER($1)
+        LOWER(${attributeName}) = LOWER($1)
       `,
-    values: [email],
+    values: [attributeValue],
   });
 
-  const isDuplicatedEmail = results.rowCount > 0;
+  const isDuplicatedAttribute = results.rowCount > 0;
 
-  if (isDuplicatedEmail) {
+  if (isDuplicatedAttribute) {
     throw new ValidationError({
-      message: `The email '${email}' already exists in the system.`,
-      action: "Please use another email address to perform this operation.",
+      message: `The ${attributeName} '${attributeValue}' already exists in the system.`,
+      action: `Please use another ${attributeName} to perform this operation.`,
     });
   }
 }
 
-async function validateUniqueUsername(username) {
-  const results = await database.query({
-    text: `
-      SELECT 
-        username
-      FROM
-        users
-      WHERE
-        LOWER(username) = LOWER($1)
-      LIMIT
-        1
-      `,
-    values: [username],
-  });
+async function hashPasswordInObject(userInputValues) {
+  const hashPassword = await password.hash(userInputValues.password);
 
-  const isDuplicatedUsername = results.rowCount > 0;
-
-  if (isDuplicatedUsername) {
-    throw new ValidationError({
-      message: `The username '${username}' already exists in the system.`,
-      action: "Please use another username to perform this operation.",
-    });
-  }
+  userInputValues.password = hashPassword;
 }
 
-async function hashPasswordInObject(userIputValues) {
-  const hashPassword = await password.hash(userIputValues.password);
-
-  userIputValues.password = hashPassword;
-}
-
-async function runSelectQuery(username) {
+async function runSelectByAttribute({ attributeName, attributeValue }) {
   const results = await database.query({
     text: `
       SELECT
@@ -83,28 +56,26 @@ async function runSelectQuery(username) {
       FROM
         users
       WHERE
-        LOWER(username) = LOWER($1)
+        LOWER(${attributeName}) = LOWER($1)
       LIMIT
         1
       `,
-    values: [username],
+    values: [attributeValue],
   });
 
   const isUsernameNotFound = results.rowCount === 0;
 
   if (isUsernameNotFound) {
     throw new NotFoundError({
-      message: `The username '${username}' was not found in the system.`,
-      action: "Please check if the username is correct.",
+      message: `The ${attributeName} '${attributeValue}' was not found in the system.`,
+      action: `Please check if the ${attributeName} is correct.`,
     });
   }
 
   return results.rows[0];
 }
 
-async function runUpdateQuery(userWithNewValues) {
-  const { id, username, email, password } = userWithNewValues;
-
+async function runUpdateQuery({ id, username, email, password }) {
   const results = await database.query({
     text: `
       UPDATE
@@ -125,47 +96,74 @@ async function runUpdateQuery(userWithNewValues) {
   return results.rows[0];
 }
 
-async function create(userIputValues) {
-  const { username, email } = userIputValues;
+async function create(userInputValues) {
+  const { username, email } = userInputValues;
 
-  await validateUniqueUsername(username);
-  await validateUniqueEmail(email);
-  await hashPasswordInObject(userIputValues);
+  await validateUniqueAttribute({
+    attributeName: "username",
+    attributeValue: username,
+  });
 
-  const newUser = await runInsertQuery(userIputValues);
+  await validateUniqueAttribute({
+    attributeName: "email",
+    attributeValue: email,
+  });
+
+  await hashPasswordInObject(userInputValues);
+
+  const newUser = await runInsertQuery(userInputValues);
   return newUser;
 }
 
-async function update(username, userImputValues) {
+async function update(username, userInputValues) {
   const currentUser = await findeOneByUsername(username);
 
-  if ("username" in userImputValues) {
-    await validateUniqueUsername(userImputValues.username);
+  if ("username" in userInputValues) {
+    await validateUniqueAttribute({
+      attributeName: "username",
+      attributeValue: userInputValues.username,
+    });
   }
 
-  if ("email" in userImputValues) {
-    await validateUniqueEmail(userImputValues.email);
+  if ("email" in userInputValues) {
+    await validateUniqueAttribute({
+      attributeName: "email",
+      attributeValue: userInputValues.email,
+    });
   }
 
-  if ("password" in userImputValues) {
-    await hashPasswordInObject(userImputValues);
+  if ("password" in userInputValues) {
+    await hashPasswordInObject(userInputValues);
   }
 
-  const userWithNewValues = { ...currentUser, ...userImputValues };
+  const userWithNewValues = { ...currentUser, ...userInputValues };
   const updatedUser = await runUpdateQuery(userWithNewValues);
 
   return updatedUser;
 }
 
 async function findeOneByUsername(username) {
-  const userFound = await runSelectQuery(username);
+  const userFound = await runSelectByAttribute({
+    attributeName: "username",
+    attributeValue: username,
+  });
+
+  return userFound;
+}
+
+async function findOneByEmail(email) {
+  const userFound = await runSelectByAttribute({
+    attributeName: "email",
+    attributeValue: email,
+  });
 
   return userFound;
 }
 
 const user = {
   create,
-  findeOneByUsername,
   update,
+  findeOneByUsername,
+  findOneByEmail,
 };
 export default user;

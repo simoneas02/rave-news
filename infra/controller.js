@@ -2,6 +2,7 @@ import { InternalServerError } from "errors/internalServerError";
 import { MethodNotAllowedError } from "errors/methodNotAllowedError";
 import { ValidationError } from "errors/validationError";
 import { NotFoundError } from "errors/notFoundError";
+import { UnauthorizedError } from "errors/unauthorizedError";
 
 function onNoMatchHandler(request, response) {
   const publicErrorObject = new MethodNotAllowedError();
@@ -10,12 +11,15 @@ function onNoMatchHandler(request, response) {
 }
 
 function onErrorHandler(error, request, response) {
-  if (error instanceof ValidationError || error instanceof NotFoundError) {
+  if (
+    error instanceof ValidationError ||
+    error instanceof NotFoundError ||
+    error instanceof UnauthorizedError
+  ) {
     return response.status(error.statusCode).json(error);
   }
 
   const publicErrorObject = new InternalServerError({
-    statusCode: error?.statusCode,
     cause: error,
   });
 
