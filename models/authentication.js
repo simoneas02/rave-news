@@ -22,7 +22,7 @@ async function findUserByEmail(userImputEmail) {
   return storedUser;
 }
 
-async function validatePassword(userImputPassword, storedPassword) {
+async function validatePassword({ userImputPassword, storedPassword }) {
   const correctPasswordMatch = await password.compare(
     userImputPassword,
     storedPassword,
@@ -30,16 +30,19 @@ async function validatePassword(userImputPassword, storedPassword) {
 
   if (!correctPasswordMatch) {
     throw new UnauthorizedError({
-      message: "Passwords does not match.",
+      message: "Password does not match.",
       action: "Please check that the submitted data is correct.",
     });
   }
 }
 
-async function getAuthenticatedUser(userImputEmail, userImputPassword) {
+async function getAuthenticatedUser({ userImputEmail, userImputPassword }) {
   try {
     const storedUser = await findUserByEmail(userImputEmail);
-    await validatePassword(userImputPassword, storedUser.password);
+    await validatePassword({
+      userImputPassword,
+      storedPassword: storedUser.password,
+    });
 
     return storedUser;
   } catch (error) {
