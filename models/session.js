@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import database from "infra/database";
+import { UnauthorizedError } from "errors/unauthorizedError";
 
 const THIRTY_DAYS_IN_MS = {
   seconds: 60,
@@ -33,8 +34,55 @@ async function runInsertQuery({ token, userId, expiresAt }) {
         ($1, $2, $3)
       RETURNING
         *
-    `,
+    ;`,
     values: [token, userId, expiresAt],
+  });
+
+  return results.rows[0];
+}
+
+async function runSelectByToken(sessionToken) {
+  const results = await database.query({
+    text: `
+      SELECT
+        *
+      FROM
+        sessions
+      WHERE
+        token = $1
+        AND expires_at > NOW()
+      LIMIT
+        1
+    ;`,
+    values: [sessionToken],
+  });
+
+  const isSessionNotFound = results.rowCount === 0;
+
+  if (isSessionNotFound) {
+    throw new UnauthorizedError({
+      message: "The user does not have an active session.",
+      action: "Check if this user is logged in and try again.",
+    });
+  }
+
+  return results.rows[0];
+}
+
+async function runUpdateQuery({ sessionId, expiresAt }) {
+  const results = await database.query({
+    text: `
+      UPDATE
+        sessions
+      SET
+        expires_at = $2,
+        updated_at = timezone('utc', now())
+      WHERE
+        id = $1
+      RETURNING
+        *
+    ;`,
+    values: [sessionId, expiresAt],
   });
 
   return results.rows[0];
@@ -53,9 +101,22 @@ async function create(userId) {
   return sessionData;
 }
 
+async function findOneValidByToken(sessionToken) {
+  return await runSelectByToken(sessionToken);
+}
+
+async function renew(sessionId) {
+  const expiresAt = new Date(Date.now() + EXPIRATION_IN_MS);
+  const renewedSessionObject = await runUpdateQuery({ sessionId, expiresAt });
+
+  return renewedSessionObject;
+}
+
 const session = {
   create,
+  findOneValidByToken,
   EXPIRATION_IN_MS,
+  renew,
 };
 
 export default session;
