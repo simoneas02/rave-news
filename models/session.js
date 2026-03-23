@@ -112,11 +112,19 @@ async function renew(sessionId) {
   return renewedSessionObject;
 }
 
+async function expireById(sessionId) {
+  const expiresAt = new Date(Date.now() - EXPIRATION_IN_MS);
+  const expiredSessionObject = await runUpdateQuery({ sessionId, expiresAt });
+
+  return expiredSessionObject;
+}
+
 const session = {
   create,
   findOneValidByToken,
   EXPIRATION_IN_MS,
   renew,
+  expireById,
 };
 
 export default session;
