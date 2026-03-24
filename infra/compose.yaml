@@ -4,7 +4,11 @@ services:
     image: "postgres:18.1-alpine3.22"
     env_file:
       - ../.env.development
-    environment:
-      POSTGRES_PASSWORD: "local_password"
     ports:
       - "5432:5432"
+  mailcacatcher:
+    container_name: "mailcatcher-dev"
+    image: "sj26/mailcatcher"
+    ports:
+      - "1025:1025"
+      - "1080:1080"
