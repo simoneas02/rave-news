@@ -1,7 +1,6 @@
 import { version as uuidVersion } from "uuid";
 import orchestrator from "tests/orchestrator";
-
-export const USERS_URL = `${process.env.API_URL}/users`;
+import { USERS_URL } from "tests/consts";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();

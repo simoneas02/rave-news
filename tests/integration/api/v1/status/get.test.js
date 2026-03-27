@@ -1,5 +1,5 @@
 import orchestrator from "tests/orchestrator";
-export const STATUS_URL = `${process.env.API_URL}/status`;
+import { STATUS_URL } from "tests/consts";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();

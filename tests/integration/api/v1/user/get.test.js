@@ -1,9 +1,8 @@
 import { version as uuidVersion } from "uuid";
 import setCookieParser from "set-cookie-parser";
 import orchestrator from "tests/orchestrator";
+import { USER_URL } from "tests/consts";
 import session from "models/session";
-
-export const USER_URL = `${process.env.API_URL}/user`;
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();

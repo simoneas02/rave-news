@@ -1,12 +1,10 @@
 import orchestrator from "tests/orchestrator";
+import { MIGRATIONS_URL } from "tests/consts";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
   await orchestrator.clearDatabase();
 });
-
-export const MIGRATIONS_URL = `${process.env.API_URL}/migrations`;
-
 describe("GET /api/v1/migrations", () => {
   describe("Anonymous user", () => {
     test("Retrieving pending migrations", async () => {

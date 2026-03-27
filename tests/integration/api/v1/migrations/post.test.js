@@ -1,5 +1,5 @@
 import orchestrator from "tests/orchestrator";
-import { MIGRATIONS_URL } from "./get.test";
+import { MIGRATIONS_URL } from "tests/consts";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();

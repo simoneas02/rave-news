@@ -2,7 +2,7 @@ import retry from "async-retry";
 import { faker } from "@faker-js/faker";
 import database from "infra/database.js";
 import migrator from "models/migrator";
-import { STATUS_URL } from "./integration/api/v1/status/get.test";
+import { STATUS_URL } from "tests/consts";
 import user from "models/user";
 import session from "models/session";
 

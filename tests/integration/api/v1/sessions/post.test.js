@@ -1,9 +1,9 @@
 import { version as uuidVersion } from "uuid";
 import setCookieParser from "set-cookie-parser";
 import orchestrator from "tests/orchestrator";
-import session from "models/session";
+import { SESSIONS_URL } from "tests/consts";
 
-export const SESSIONS_URL = `${process.env.API_URL}/sessions`;
+import session from "models/session";
 
 beforeAll(async () => {
   await orchestrator.clearDatabase();
