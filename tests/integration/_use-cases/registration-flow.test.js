@@ -29,7 +29,7 @@ describe("Use case: Registratio Flow (all successful)", () => {
       email: "registration.flow@gmail.com",
       id: responseBody.id,
       password: responseBody.password,
-      features: [],
+      features: ["read:activation_token"],
       updated_at: responseBody.updated_at,
       username: "RegistrationFlow",
     });
