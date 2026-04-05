@@ -11,7 +11,7 @@ exports.up = (pgm) => {
       notNull: false,
     },
 
-    used_id: {
+    user_id: {
       type: "uuid",
       notNull: true,
     },
