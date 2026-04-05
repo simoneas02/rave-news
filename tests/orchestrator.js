@@ -73,8 +73,12 @@ async function deleteAllEmails() {
 }
 
 async function getLastEmail() {
-  const emailListReponse = await fetch(`${EMAIL_HTTP_URL}/messages`);
-  const emailListBody = await emailListReponse.json();
+  const emailListResponse = await fetch(`${EMAIL_HTTP_URL}/messages`);
+  const emailListBody = await emailListResponse.json();
+
+  if (emailListBody.length === 0) {
+    return null;
+  }
 
   const lastEmailItem = emailListBody.at(-1);
 
