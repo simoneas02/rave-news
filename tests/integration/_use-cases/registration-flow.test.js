@@ -1,5 +1,6 @@
 import orchestrator from "tests/orchestrator";
 import { USERS_URL } from "tests/consts";
+import activation from "models/activation";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -8,9 +9,11 @@ beforeAll(async () => {
   await orchestrator.deleteAllEmails();
 });
 
-describe("Use case: Registratio Flow (all successful)", () => {
+describe("Use case: Registration Flow (all successful)", () => {
+  let createUserResponseBody;
+
   test("Create user account", async () => {
-    const response = await fetch(USERS_URL, {
+    const createUserResponse = await fetch(USERS_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -20,22 +23,37 @@ describe("Use case: Registratio Flow (all successful)", () => {
       }),
     });
 
-    expect(response.status).toBe(201);
+    expect(createUserResponse.status).toBe(201);
 
-    const responseBody = await response.json();
+    createUserResponseBody = await createUserResponse.json();
 
-    expect(responseBody).toEqual({
-      created_at: responseBody.created_at,
+    expect(createUserResponseBody).toEqual({
+      created_at: createUserResponseBody.created_at,
       email: "registration.flow@gmail.com",
-      id: responseBody.id,
-      password: responseBody.password,
+      id: createUserResponseBody.id,
+      password: createUserResponseBody.password,
       features: ["read:activation_token"],
-      updated_at: responseBody.updated_at,
+      updated_at: createUserResponseBody.updated_at,
       username: "RegistrationFlow",
     });
   });
 
-  // test("Receive activation email", async () => {});
+  test("Receive activation email", async () => {
+    const lastEmail = await orchestrator.getLastEmail();
+
+    expect(lastEmail.sender).toBe("<raves.contato@gmail.com>");
+    expect(lastEmail.recipients[0]).toBe("<registration.flow@gmail.com>");
+    expect(lastEmail.subject).toBe(
+      "Activate your registration to access rave-news",
+    );
+    expect(lastEmail.text).toContain("RegistrationFlow");
+
+    const activationToken = await activation.findOneByUserId(
+      createUserResponseBody?.id,
+    );
+    expect(lastEmail.text).toContain(activationToken.id);
+  });
+
   // test("Activation account", async () => {});
   // test("Login", async () => {});
   // test("Get user information", async () => {});
