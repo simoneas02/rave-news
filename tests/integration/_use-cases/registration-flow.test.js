@@ -1,5 +1,10 @@
 import orchestrator from "tests/orchestrator";
-import { USERS_URL, ACTIVATIONS_URL } from "tests/consts";
+import {
+  USERS_URL,
+  ACTIVATIONS_URL,
+  SESSIONS_URL,
+  USER_URL,
+} from "tests/consts";
 import activation from "models/activation";
 import webserver from "infra/webserver";
 import user from "models/user";
@@ -14,6 +19,7 @@ beforeAll(async () => {
 describe("Use case: Registration Flow (all successful)", () => {
   let createUserResponseBody;
   let activationTokenId;
+  let createSessionsResponseBody;
 
   test("Create user account", async () => {
     const createUserResponse = await fetch(USERS_URL, {
@@ -80,7 +86,27 @@ describe("Use case: Registration Flow (all successful)", () => {
     expect(activatedUser.features).toEqual(["create:session"]);
   });
 
-  // test("Login", async () => {});
+  test("Login", async () => {
+    const createSessionsResponse = await fetch(SESSIONS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "registration.flow@gmail.com",
+        password: "RegistrationFlow",
+      }),
+    });
 
-  // test("Get user information", async () => {});
+    expect(createSessionsResponse.status).toBe(201);
+
+    createSessionsResponseBody = await createSessionsResponse.json();
+    expect(createSessionsResponseBody.user_id).toBe(createUserResponseBody.id);
+  });
+
+  // test("Get user information", async () => {
+  //   const userInformationResponse = await fetch(USER_URL, {
+  //     headers: { Cookie: `session_token=${createSessionsResponseBody.token}` },
+  //   });
+
+  //   expect(userInformationResponse.status).toBe(200);
+  // });
 });
