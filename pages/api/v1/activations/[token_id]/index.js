@@ -14,13 +14,10 @@ async function patchHandler(request, response) {
 
   const validActivationToken =
     await activation.findOneValidById(activationTokenId);
+
+  await activation.activateUserByUserId(validActivationToken.user_id);
   const usedActivationToken =
     await activation.markTokenAsUsed(activationTokenId);
-
-  await user.setFeatures({
-    userId: validActivationToken?.user_id,
-    features: ["create:session"],
-  });
 
   return response.status(200).json(usedActivationToken);
 }

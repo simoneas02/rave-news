@@ -1,5 +1,6 @@
 import database from "infra/database";
 import email from "infra/email";
+import user from "models/user";
 import webserver from "infra/webserver";
 import { NotFoundError } from "errors/notFoundError";
 
@@ -94,6 +95,15 @@ async function findOneValidById(tokenId) {
   return await runSelectByTokenId(tokenId);
 }
 
+async function activateUserByUserId(userId) {
+  const activatedUser = await user.setFeatures({
+    userId,
+    features: ["create:session"],
+  });
+
+  return activatedUser;
+}
+
 async function markTokenAsUsed(tokenId) {
   const updatedToken = await runUpdateQuery(tokenId);
 
@@ -105,6 +115,7 @@ const activation = {
   sendEmailToUser,
   findOneValidById,
   markTokenAsUsed,
+  activateUserByUserId,
 };
 
 export default activation;

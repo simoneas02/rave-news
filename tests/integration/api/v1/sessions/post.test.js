@@ -1,7 +1,7 @@
 import { version as uuidVersion } from "uuid";
 import setCookieParser from "set-cookie-parser";
 import orchestrator from "tests/orchestrator";
-import { SESSIONS_URL } from "tests/consts";
+import { SESSIONS_URL, ACTIVATIONS_URL } from "tests/consts";
 
 import session from "models/session";
 
@@ -92,6 +92,8 @@ describe("POST /api/v1/sessions", () => {
         email: "correct-email@gmail.com",
         password: "correctPassword",
       });
+
+      await orchestrator.activateUser(createdUser.id);
 
       const response = await fetch(SESSIONS_URL, {
         method: "POST",

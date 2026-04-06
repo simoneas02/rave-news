@@ -2,6 +2,8 @@ import { createRouter } from "next-connect";
 import controller from "infra/controller";
 import authentication from "models/authentication";
 import session from "models/session";
+import authorization from "models/authorization";
+import { ForbiddenError } from "errors/forbiddenError";
 
 const router = createRouter();
 
@@ -18,6 +20,16 @@ async function postHandler(request, response) {
     userImputEmail,
     userImputPassword,
   });
+
+  if (
+    !authorization.can({ user: authenticatedUser, feature: "create:session" })
+  ) {
+    throw new ForbiddenError({
+      message: "Your account does not have permission to log in at this time.",
+      action:
+        "Please verify your account status or contact support for further assistance.",
+    });
+  }
 
   const newSession = await session.create(authenticatedUser.id);
 

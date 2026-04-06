@@ -7,6 +7,7 @@ import { UnauthorizedError } from "errors/unauthorizedError";
 import { ForbiddenError } from "errors/forbiddenError";
 import session from "models/session";
 import user from "models/user";
+import authorization from "models/authorization";
 
 function onNoMatchHandler(request, response) {
   const publicErrorObject = new MethodNotAllowedError();
@@ -61,12 +62,12 @@ async function injectAnonymousOrUser(request, response, next) {
   if (request.cookies?.session_token) {
     await injectAuthenticatedUser(request);
 
-    return next(request);
+    return next();
   }
 
   await injectAnonymousUser(request);
 
-  next();
+  return next();
 }
 
 async function injectAuthenticatedUser(request) {
@@ -95,7 +96,7 @@ function canRequest(feature) {
   return function canRequestMiddleware(request, response, next) {
     const userTryingToRequest = request.context.user;
 
-    if (userTryingToRequest.features.includes(feature)) {
+    if (authorization.can({ user: userTryingToRequest, feature })) {
       return next();
     }
 
