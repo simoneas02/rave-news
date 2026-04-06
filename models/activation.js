@@ -48,6 +48,25 @@ async function runSelectByTokenId(tokenId) {
   return results.rows[0];
 }
 
+async function runUpdateQuery(tokenId) {
+  const results = await database.query({
+    text: `
+      UPDATE
+        user_activation_tokens
+      SET
+        used_at = timezone('utc', now()),
+        updated_at = timezone('utc', now())
+      WHERE
+        id = $1
+      RETURNING
+        *
+    ;`,
+    values: [tokenId],
+  });
+
+  return results.rows[0];
+}
+
 async function create(userId) {
   const expiresAt = new Date(Date.now() + EXPIRATION_IN_MILISECONDS);
 
@@ -75,10 +94,17 @@ async function findOneValidById(tokenId) {
   return await runSelectByTokenId(tokenId);
 }
 
+async function markTokenAsUsed(tokenId) {
+  const updatedToken = await runUpdateQuery(tokenId);
+
+  return updatedToken;
+}
+
 const activation = {
   create,
   sendEmailToUser,
   findOneValidById,
+  markTokenAsUsed,
 };
 
 export default activation;
