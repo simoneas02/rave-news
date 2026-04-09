@@ -4,7 +4,7 @@ import user from "models/user";
 import webserver from "infra/webserver";
 import { NotFoundError } from "errors/notFoundError";
 
-const EXPIRATION_IN_MILISECONDS = 60 * 15 * 1000; // 15 minutes
+const EXPIRATION_IN_MILLISECONDS = 60 * 15 * 1000; // 15 minutes
 
 async function runIsertQuery(userId, expiresAt) {
   const results = await database.query({
@@ -33,7 +33,7 @@ async function runSelectByTokenId(tokenId) {
         AND used_at IS NULL
       LIMIT
         1
-      ;`,
+    ;`,
     values: [tokenId],
   });
 
@@ -69,7 +69,7 @@ async function runUpdateQuery(tokenId) {
 }
 
 async function create(userId) {
-  const expiresAt = new Date(Date.now() + EXPIRATION_IN_MILISECONDS);
+  const expiresAt = new Date(Date.now() + EXPIRATION_IN_MILLISECONDS);
 
   const newToken = await runIsertQuery(userId, expiresAt);
 
@@ -92,13 +92,15 @@ rave-news team :)
 }
 
 async function findOneValidById(tokenId) {
-  return await runSelectByTokenId(tokenId);
+  const validToken = await runSelectByTokenId(tokenId);
+
+  return validToken;
 }
 
 async function activateUserByUserId(userId) {
   const activatedUser = await user.setFeatures({
     userId,
-    features: ["create:session"],
+    features: ["create:session", "read:session"],
   });
 
   return activatedUser;
@@ -116,6 +118,7 @@ const activation = {
   findOneValidById,
   markTokenAsUsed,
   activateUserByUserId,
+  EXPIRATION_IN_MILLISECONDS,
 };
 
 export default activation;

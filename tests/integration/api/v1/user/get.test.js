@@ -11,11 +11,32 @@ beforeAll(async () => {
 });
 
 describe("GET /api/v1/user", () => {
+  describe("Anonymous user", () => {
+    test("Retrieving the endpoint", async () => {
+      const response = await fetch(USER_URL);
+
+      expect(response.status).toBe(403);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        action:
+          "Please upgrade your subscription plan or contact your organization administrator to request access.",
+        message:
+          "Access denied. Your account does not have the required permissions for the 'read:session' feature.",
+        name: "ForbiddenError",
+        status_code: 403,
+      });
+    });
+  });
+
   describe("Default user", () => {
     test("With a valid session", async () => {
       const createdUser = await orchestrator.createUser({
         username: "UserWithValidSession",
       });
+
+      const activatedUser = await orchestrator.activateUser(createdUser.id);
 
       const sessionObject = await orchestrator.createSession(createdUser.id);
 
@@ -37,9 +58,9 @@ describe("GET /api/v1/user", () => {
         username: "UserWithValidSession",
         email: createdUser.email,
         password: createdUser.password,
-        features: ["read:activation_token"],
+        features: ["create:session", "read:session"],
         created_at: createdUser.created_at.toISOString(),
-        updated_at: createdUser.updated_at.toISOString(),
+        updated_at: activatedUser.updated_at.toISOString(),
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
@@ -71,11 +92,11 @@ describe("GET /api/v1/user", () => {
     });
 
     test("With a nonexistent session", async () => {
-      const nonexitentToken =
+      const nonexistentToken =
         "782fac1b8cecbe8d8fd036eb4d15875646c2c15a7be0bed01f52847424d70f6b6a40a90fbf5168e385900510ac24f538";
 
       const response = await fetch(USER_URL, {
-        headers: { Cookie: `session_token=${nonexitentToken}` },
+        headers: { Cookie: `session_token=${nonexistentToken}` },
       });
 
       expect(response.status).toBe(401);
@@ -150,6 +171,8 @@ describe("GET /api/v1/user", () => {
         username: "HalfwayExpiredSession",
       });
 
+      const activatedUser = await orchestrator.activateUser(createdUser.id);
+
       const sessionObject = await orchestrator.createSession(createdUser.id);
 
       jest.useRealTimers();
@@ -167,16 +190,16 @@ describe("GET /api/v1/user", () => {
         username: "HalfwayExpiredSession",
         email: createdUser.email,
         password: createdUser.password,
-        features: ["read:activation_token"],
+        features: ["create:session", "read:session"],
         created_at: createdUser.created_at.toISOString(),
-        updated_at: createdUser.updated_at.toISOString(),
+        updated_at: activatedUser.updated_at.toISOString(),
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
       expect(Date.parse(responseBody.created_at)).not.toBeNaN();
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
-      // Session renew assertions
+      // Session renewal assertions
       const renewedSessionObject = await session.findOneValidByToken(
         sessionObject.token,
       );
