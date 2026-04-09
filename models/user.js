@@ -212,7 +212,7 @@ function injectDefaultFeaturesInObject(userInputValues) {
 }
 
 async function setFeatures({ userId, features }) {
-  await updateFeaturesQuery({ userId, features });
+  return await updateFeaturesQuery({ userId, features });
 }
 
 const user = {

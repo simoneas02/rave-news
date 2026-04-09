@@ -3,6 +3,8 @@ import email from "infra/email";
 import user from "models/user";
 import webserver from "infra/webserver";
 import { NotFoundError } from "errors/notFoundError";
+import authorization from "./authorization";
+import { ForbiddenError } from "errors/forbiddenError";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 15 * 1000; // 15 minutes
 
@@ -98,6 +100,21 @@ async function findOneValidById(tokenId) {
 }
 
 async function activateUserByUserId(userId) {
+  const userToActivate = await user.findOneById(userId);
+
+  if (
+    !authorization.can({
+      user: userToActivate,
+      feature: "read:activation_token",
+    })
+  ) {
+    throw new ForbiddenError({
+      message: "This activation link is invalid or has already been used.",
+      action:
+        "Please request a new activation email or contact support if the problem persists.",
+    });
+  }
+
   const activatedUser = await user.setFeatures({
     userId,
     features: ["create:session", "read:session"],
