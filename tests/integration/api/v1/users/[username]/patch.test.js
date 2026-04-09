@@ -13,9 +13,43 @@ beforeAll(async () => {
 
 describe("PATCH /api/v1/users/username", () => {
   describe("Anonymous user", () => {
+    test("With unique username", async () => {
+      const createdUser = await orchestrator.createUser({});
+
+      const response = await fetch(`${USERS_URL}/${createdUser.username}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: "uniqueUser2",
+        }),
+      });
+
+      expect(response.status).toBe(403);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        action:
+          "Please upgrade your subscription plan or contact your organization administrator to request access.",
+        message:
+          "Access denied. Your account does not have the required permissions for the 'update:user' feature.",
+        name: "ForbiddenError",
+        status_code: 403,
+      });
+    });
+  });
+
+  describe("Default user", () => {
     test("With nonexitent 'username'", async () => {
+      const createdUser = await orchestrator.createUser({});
+      const activatedUser = await orchestrator.activateUser(createdUser.id);
+      const sessionUserObject = await orchestrator.createSession(
+        activatedUser.id,
+      );
+
       const response = await fetch(`${USERS_URL}/username-not-registered`, {
         method: "PATCH",
+        headers: { Cookie: `session_token=${sessionUserObject.token}` },
       });
 
       expect(response.status).toBe(404);
@@ -36,13 +70,20 @@ describe("PATCH /api/v1/users/username", () => {
         username: "user1",
       });
 
-      await orchestrator.createUser({
+      const createdUser2 = await orchestrator.createUser({
         username: "user2",
       });
+      const activatedUser2 = await orchestrator.activateUser(createdUser2.id);
+      const sessionUser2Object = await orchestrator.createSession(
+        activatedUser2.id,
+      );
 
       const updatedUser2 = await fetch(`${USERS_URL}/user2`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `session_token=${sessionUser2Object.token}`,
+        },
         body: JSON.stringify({
           username: "user1",
         }),
@@ -68,12 +109,19 @@ describe("PATCH /api/v1/users/username", () => {
       const createdUser2 = await orchestrator.createUser({
         email: "email2@gmail.com",
       });
+      const activatedUser2 = await orchestrator.activateUser(createdUser2.id);
+      const sessionUser2Object = await orchestrator.createSession(
+        activatedUser2.id,
+      );
 
       const { username } = createdUser2;
 
       const updatedEmail2 = await fetch(`${USERS_URL}/${username}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `session_token=${sessionUser2Object.token}`,
+        },
         body: JSON.stringify({
           email: "email1@gmail.com",
         }),
@@ -92,13 +140,19 @@ describe("PATCH /api/v1/users/username", () => {
     });
 
     test("With unique username", async () => {
-      const createdUser = await orchestrator.createUser({
-        username: "uniqueUser1",
-      });
+      const createdUser = await orchestrator.createUser({});
 
-      const response = await fetch(`${USERS_URL}/uniqueUser1`, {
+      const activatedUser = await orchestrator.activateUser(createdUser.id);
+      const sessionUserObject = await orchestrator.createSession(
+        activatedUser.id,
+      );
+
+      const response = await fetch(`${USERS_URL}/${createdUser.username}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `session_token=${sessionUserObject.token}`,
+        },
         body: JSON.stringify({
           username: "uniqueUser2",
         }),
@@ -115,7 +169,7 @@ describe("PATCH /api/v1/users/username", () => {
         username: "uniqueUser2",
         email,
         password,
-        features: ["read:activation_token"],
+        features: ["create:session", "read:session", "update:user"],
         created_at,
         updated_at,
       });
@@ -125,87 +179,103 @@ describe("PATCH /api/v1/users/username", () => {
       expect(Date.parse(updated_at)).not.toBeNaN();
       expect(updated_at > created_at).toBe(true);
     });
-  });
 
-  test("With unique email", async () => {
-    const createdUser = await orchestrator.createUser({
-      email: "uniqueEmail1@gmail.com",
+    test("With unique email", async () => {
+      const createdUser = await orchestrator.createUser({
+        email: "uniqueEmail1@gmail.com",
+      });
+
+      const activatedUser = await orchestrator.activateUser(createdUser.id);
+      const sessionUserObject = await orchestrator.createSession(
+        activatedUser.id,
+      );
+
+      const { username } = createdUser;
+
+      const response = await fetch(`${USERS_URL}/${createdUser.username}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `session_token=${sessionUserObject.token}`,
+        },
+        body: JSON.stringify({ email: "uniqueEmail2@gmail.com" }),
+      });
+
+      expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+      const { id, password, created_at, updated_at } = responseBody;
+
+      expect(responseBody).toEqual({
+        id,
+        username,
+        email: "uniqueEmail2@gmail.com",
+        features: ["create:session", "read:session", "update:user"],
+        password,
+        created_at,
+        updated_at,
+      });
+
+      expect(uuidVersion(id)).toBe(4);
+      expect(Date.parse(created_at)).not.toBeNaN();
+      expect(Date.parse(updated_at)).not.toBeNaN();
+      expect(updated_at > created_at).toBe(true);
     });
 
-    const { username } = createdUser;
+    test("With unique password", async () => {
+      const createdUser = await orchestrator.createUser({
+        password: "uniquePassword1",
+      });
 
-    const response = await fetch(`${USERS_URL}/${username}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: "uniqueEmail2@gmail.com" }),
+      const activatedUser = await orchestrator.activateUser(createdUser.id);
+      const sessionUserObject = await orchestrator.createSession(
+        activatedUser.id,
+      );
+
+      const { username, email } = createdUser;
+
+      const response = await fetch(`${USERS_URL}/${username}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `session_token=${sessionUserObject.token}`,
+        },
+        body: JSON.stringify({ password: "uniquePassword2" }),
+      });
+
+      expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+      const { id, created_at, updated_at } = responseBody;
+
+      expect(responseBody).toEqual({
+        id,
+        username,
+        email,
+        password: responseBody.password,
+        features: ["create:session", "read:session", "update:user"],
+        created_at,
+        updated_at,
+      });
+
+      expect(uuidVersion(id)).toBe(4);
+      expect(Date.parse(created_at)).not.toBeNaN();
+      expect(Date.parse(updated_at)).not.toBeNaN();
+      expect(updated_at > created_at).toBe(true);
+
+      const userInDatabase = await user.findeOneByUsername(username);
+      const correctPasswordMatch = await password.compare(
+        "uniquePassword2",
+        userInDatabase.password,
+      );
+
+      const incorrectPasswordMatch = await password.compare(
+        "uniquePassword1",
+        userInDatabase.password,
+      );
+
+      expect(correctPasswordMatch).toBe(true);
+      expect(incorrectPasswordMatch).toBe(false);
     });
-
-    expect(response.status).toBe(200);
-
-    const responseBody = await response.json();
-    const { id, password, created_at, updated_at } = responseBody;
-
-    expect(responseBody).toEqual({
-      id,
-      username,
-      email: "uniqueEmail2@gmail.com",
-      features: ["read:activation_token"],
-      password,
-      created_at,
-      updated_at,
-    });
-
-    expect(uuidVersion(id)).toBe(4);
-    expect(Date.parse(created_at)).not.toBeNaN();
-    expect(Date.parse(updated_at)).not.toBeNaN();
-    expect(updated_at > created_at).toBe(true);
-  });
-
-  test("With unique password", async () => {
-    const createdUser = await orchestrator.createUser({
-      password: "uniquePassword1",
-    });
-
-    const { username, email } = createdUser;
-
-    const response = await fetch(`${USERS_URL}/${username}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: "uniquePassword2" }),
-    });
-
-    expect(response.status).toBe(200);
-
-    const responseBody = await response.json();
-    const { id, created_at, updated_at } = responseBody;
-
-    expect(responseBody).toEqual({
-      id,
-      username,
-      email,
-      password: responseBody.password,
-      features: ["read:activation_token"],
-      created_at,
-      updated_at,
-    });
-
-    expect(uuidVersion(id)).toBe(4);
-    expect(Date.parse(created_at)).not.toBeNaN();
-    expect(Date.parse(updated_at)).not.toBeNaN();
-    expect(updated_at > created_at).toBe(true);
-
-    const userInDatabase = await user.findeOneByUsername(username);
-    const correctPasswordMatch = await password.compare(
-      "uniquePassword2",
-      userInDatabase.password,
-    );
-
-    const incorrectPasswordMatch = await password.compare(
-      "uniquePassword1",
-      userInDatabase.password,
-    );
-
-    expect(correctPasswordMatch).toBe(true);
-    expect(incorrectPasswordMatch).toBe(false);
   });
 });
