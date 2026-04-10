@@ -78,16 +78,19 @@ describe("PATCH /api/v1/users/username", () => {
         activatedUser2.id,
       );
 
-      const updatedUser2 = await fetch(`${USERS_URL}/user2`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: `session_token=${sessionUser2Object.token}`,
+      const updatedUser2 = await fetch(
+        `${USERS_URL}/${createdUser2.username}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: `session_token=${sessionUser2Object.token}`,
+          },
+          body: JSON.stringify({
+            username: "user1",
+          }),
         },
-        body: JSON.stringify({
-          username: "user1",
-        }),
-      });
+      );
 
       expect(updatedUser2.status).toBe(400);
 
@@ -98,6 +101,41 @@ describe("PATCH /api/v1/users/username", () => {
         message: "The username 'user1' already exists in the system.",
         action: "Please use another username to perform this operation.",
         status_code: 400,
+      });
+    });
+
+    test("With `user2` targeting `user1`", async () => {
+      const createdUser1 = await orchestrator.createUser({});
+
+      const createdUser2 = await orchestrator.createUser({});
+      const activatedUser2 = await orchestrator.activateUser(createdUser2.id);
+      const sessionUser2Object = await orchestrator.createSession(
+        activatedUser2.id,
+      );
+
+      const updatedUser1 = await fetch(
+        `${USERS_URL}/${createdUser1.username}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: `session_token=${sessionUser2Object.token}`,
+          },
+          body: JSON.stringify({
+            username: "user3",
+          }),
+        },
+      );
+
+      expect(updatedUser1.status).toBe(403);
+
+      const responseBody = await updatedUser1.json();
+
+      expect(responseBody).toEqual({
+        action: "Check your account permissions or contact an administrator.",
+        message: "You don't have permission to update this user.",
+        name: "ForbiddenError",
+        status_code: 403,
       });
     });
 
