@@ -142,6 +142,25 @@ async function updateFeaturesQuery({ userId, features }) {
   return results.rows[0];
 }
 
+async function addFeaturesQuery({ userId, features }) {
+  const results = await database.query({
+    text: `
+      UPDATE
+        users
+      SET
+        features = array_cat(features, $2),
+        updated_at = timezone('utc', now())
+      WHERE
+        id = $1
+      RETURNING
+        *
+    ;`,
+    values: [userId, features],
+  });
+
+  return results.rows[0];
+}
+
 async function create(userInputValues) {
   const { username, email } = userInputValues;
 
@@ -215,6 +234,10 @@ async function setFeatures({ userId, features }) {
   return await updateFeaturesQuery({ userId, features });
 }
 
+async function addFeatures({ userId, features }) {
+  return await addFeaturesQuery({ userId, features });
+}
+
 const user = {
   create,
   update,
@@ -222,6 +245,7 @@ const user = {
   findOneByEmail,
   findOneById,
   setFeatures,
+  addFeatures,
 };
 
 export default user;
