@@ -1,7 +1,7 @@
 import { version as uuidVersion } from "uuid";
 import setCookieParser from "set-cookie-parser";
 import orchestrator from "tests/orchestrator";
-import { SESSIONS_URL, ACTIVATIONS_URL } from "tests/consts";
+import { SESSIONS_URL } from "tests/consts";
 
 import session from "models/session";
 

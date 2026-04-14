@@ -199,14 +199,11 @@ describe("PATCH /api/v1/users/username", () => {
       expect(response.status).toBe(200);
 
       const responseBody = await response.json();
-      const { id, password, created_at, updated_at } = responseBody;
-      const { email } = createdUser;
+      const { id, created_at, updated_at } = responseBody;
 
       expect(responseBody).toEqual({
         id,
         username: "uniqueUser2",
-        email,
-        password,
         features: ["create:session", "read:session", "update:user"],
         created_at,
         updated_at,
@@ -247,9 +244,7 @@ describe("PATCH /api/v1/users/username", () => {
       expect(responseBody).toEqual({
         id,
         username,
-        email: "uniqueEmail2@gmail.com",
         features: ["create:session", "read:session", "update:user"],
-        password,
         created_at,
         updated_at,
       });
@@ -289,8 +284,6 @@ describe("PATCH /api/v1/users/username", () => {
       expect(responseBody).toEqual({
         id,
         username,
-        email,
-        password: responseBody.password,
         features: ["create:session", "read:session", "update:user"],
         created_at,
         updated_at,
@@ -354,9 +347,7 @@ describe("PATCH /api/v1/users/username", () => {
       expect(responseBody).toEqual({
         id: defaultUser.id,
         username: "UpdatedByPrivilegedUser",
-        email: defaultUser.email,
         features: defaultUser.features,
-        password: responseBody.password,
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });

@@ -4,33 +4,73 @@ import { MIGRATIONS_URL } from "tests/consts";
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
   await orchestrator.clearDatabase();
+  await orchestrator.runPendingMigrations();
 });
 
 describe("POST /api/v1/migrations", () => {
   describe("Anonymous user", () => {
-    describe("Running pending migrations", () => {
-      test("For the first time", async () => {
-        const response1 = await fetch(MIGRATIONS_URL, {
-          method: "POST",
-        });
-        expect(response1.status).toBe(201);
+    test("Retrieving pending migrations", async () => {
+      const response = await fetch(MIGRATIONS_URL);
+      expect(response.status).toBe(403);
 
-        const response1Body = await response1.json();
+      const responseBody = await response.json();
 
-        expect(Array.isArray(response1Body)).toBe(true);
-        expect(response1Body.length).toBeGreaterThan(0);
+      expect(responseBody).toEqual({
+        action:
+          "Please upgrade your subscription plan or contact your organization administrator to request access.",
+        message:
+          "Access denied. Your account does not have the required permissions for the 'read:migration' feature.",
+        name: "ForbiddenError",
+        status_code: 403,
       });
-      test("For the second time", async () => {
-        const response2 = await fetch(MIGRATIONS_URL, {
-          method: "POST",
-        });
-        expect(response2.status).toBe(200);
+    });
+  });
 
-        const response2Body = await response2.json();
+  describe("Default user", () => {
+    test("Retrieving pending migrations", async () => {
+      const createdUser = await orchestrator.createUser({});
+      const activatedUser = await orchestrator.activateUser(createdUser.id);
+      const sessionObject = await orchestrator.createSession(activatedUser.id);
 
-        expect(Array.isArray(response2Body)).toBe(true);
-        expect(response2Body.length).toBe(0);
+      const response = await fetch(MIGRATIONS_URL, {
+        headers: { Cookie: `session_token=${sessionObject.token}` },
       });
+
+      expect(response.status).toBe(403);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        action:
+          "Please upgrade your subscription plan or contact your organization administrator to request access.",
+        message:
+          "Access denied. Your account does not have the required permissions for the 'read:migration' feature.",
+        name: "ForbiddenError",
+        status_code: 403,
+      });
+    });
+  });
+
+  describe("Privileged user", () => {
+    test("With `read:migrations`", async () => {
+      const createdUser = await orchestrator.createUser({});
+      const activatedUser = await orchestrator.activateUser(createdUser.id);
+      const x = await orchestrator.addFeaturesToUser({
+        userId: createdUser.id,
+        features: ["create:migration"],
+      });
+      const sessionObject = await orchestrator.createSession(activatedUser.id);
+
+      const response = await fetch(MIGRATIONS_URL, {
+        method: "POST",
+        headers: { Cookie: `session_token=${sessionObject.token}` },
+      });
+
+      expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+
+      expect(Array.isArray(responseBody)).toBe(true);
     });
   });
 });
