@@ -10,7 +10,10 @@ const transporter = nodemailer.createTransport({
   },
   secure: process.env.NODE_ENV === "production" ? true : false,
 });
+
 async function send(mailOptions) {
+  const { text, ...safeMailOptions } = mailOptions;
+
   try {
     await transporter.sendMail(mailOptions);
   } catch (error) {
@@ -19,7 +22,7 @@ async function send(mailOptions) {
       action:
         "Please try again later or contact support if the problem persists.",
       cause: error,
-      context: mailOptions,
+      context: safeMailOptions,
     });
   }
 }

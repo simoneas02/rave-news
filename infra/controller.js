@@ -10,7 +10,7 @@ import user from "models/user";
 import authorization from "models/authorization";
 
 function onNoMatchHandler(request, response) {
-  const publicErrorObject = new MethodNotAllowedError();
+  const publicErrorObject = new MethodNotAllowedError({});
 
   response.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
@@ -33,7 +33,7 @@ function onErrorHandler(error, request, response) {
     cause: error,
   });
 
-  onsole.error(publicErrorObject);
+  console.error(publicErrorObject);
 
   response.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
