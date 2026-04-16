@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
 });
 
 async function send(mailOptions) {
-  const { text, ...safeMailOptions } = mailOptions;
+  // const { text, ...safeMailOptions } = mailOptions;
 
   try {
     await transporter.sendMail(mailOptions);
@@ -22,7 +22,7 @@ async function send(mailOptions) {
       action:
         "Please try again later or contact support if the problem persists.",
       cause: error,
-      context: safeMailOptions,
+      context: mailOptions,
     });
   }
 }
