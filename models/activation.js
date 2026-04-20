@@ -80,7 +80,7 @@ async function create(userId) {
 
 async function sendEmailToUser(user, activationToken) {
   await email.send({
-    from: "rave-news <raves.contato@gmail.com>",
+    from: "rave-news <contato@simone.dev.br>",
     to: user.email,
     subject: "Activate your registration to access rave-news",
     text: `${user.username}, click the link below to activate your registration on rave-news.
