@@ -1,9 +1,9 @@
 import { version as uuidVersion } from "uuid";
 import orchestrator from "tests/orchestrator";
+import { USERS_URL } from "tests/consts";
+
 import user from "models/user.js";
 import password from "models/password.js";
-
-export const USERS_URL = `${process.env.API_URL}/users`;
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -33,8 +33,7 @@ describe("POST /api/v1/users", () => {
       expect(responseBody).toEqual({
         id: responseBody.id,
         username: "user01",
-        email: "user01@gmail.com",
-        password: responseBody.password,
+        features: ["read:activation_token"],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -134,6 +133,37 @@ describe("POST /api/v1/users", () => {
           "The username 'DuplicatedUsername' already exists in the system.",
         action: "Please use another username to perform this operation.",
         status_code: 400,
+      });
+    });
+  });
+
+  describe("Default user", () => {
+    test("With unique and valid data", async () => {
+      const user1 = await orchestrator.createUser({});
+      await orchestrator.activateUser(user1.id);
+      const user1SessionObject = await orchestrator.createSession(user1.id);
+
+      const user2Response = await fetch(USERS_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: `session_token=${user1SessionObject.token}`,
+        },
+        body: JSON.stringify({
+          username: "LoggedUser",
+          password: "LoggedUser",
+          email: "loggedUser@gmail.com",
+        }),
+      });
+
+      const user2ResponseBody = await user2Response.json();
+      expect(user2ResponseBody).toEqual({
+        action:
+          "Please upgrade your subscription plan or contact your organization administrator to request access.",
+        message:
+          "Access denied. Your account does not have the required permissions for the 'create:user' feature.",
+        name: "ForbiddenError",
+        status_code: 403,
       });
     });
   });

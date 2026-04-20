@@ -1,3 +1,4 @@
+import { ServiceError } from "errors/serviceError";
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
@@ -9,8 +10,21 @@ const transporter = nodemailer.createTransport({
   },
   secure: process.env.NODE_ENV === "production" ? true : false,
 });
+
 async function send(mailOptions) {
-  await transporter.sendMail(mailOptions);
+  // const { text, ...safeMailOptions } = mailOptions;
+
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    throw new ServiceError({
+      message: "It was not possible to send the email at this time.",
+      action:
+        "Please try again later or contact support if the problem persists.",
+      cause: error,
+      context: mailOptions,
+    });
+  }
 }
 
 const email = {

@@ -4,16 +4,23 @@ import { MethodNotAllowedError } from "errors/methodNotAllowedError";
 import { ValidationError } from "errors/validationError";
 import { NotFoundError } from "errors/notFoundError";
 import { UnauthorizedError } from "errors/unauthorizedError";
+import { ForbiddenError } from "errors/forbiddenError";
 import session from "models/session";
+import user from "models/user";
+import authorization from "models/authorization";
 
 function onNoMatchHandler(request, response) {
-  const publicErrorObject = new MethodNotAllowedError();
+  const publicErrorObject = new MethodNotAllowedError({});
 
   response.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
 
 function onErrorHandler(error, request, response) {
-  if (error instanceof ValidationError || error instanceof NotFoundError) {
+  if (
+    error instanceof ValidationError ||
+    error instanceof NotFoundError ||
+    error instanceof ForbiddenError
+  ) {
     return response.status(error.statusCode).json(error);
   }
 
@@ -25,6 +32,8 @@ function onErrorHandler(error, request, response) {
   const publicErrorObject = new InternalServerError({
     cause: error,
   });
+
+  console.error(publicErrorObject);
 
   response.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
@@ -51,6 +60,56 @@ function clearSessionCookie(response) {
   response.setHeader("Set-Cookie", setCookie);
 }
 
+async function injectAnonymousOrUser(request, response, next) {
+  if (request.cookies?.session_token) {
+    await injectAuthenticatedUser(request);
+
+    return next();
+  }
+
+  await injectAnonymousUser(request);
+
+  return next();
+}
+
+async function injectAuthenticatedUser(request) {
+  const sessionToken = request.cookies.session_token;
+  const sessionObject = await session.findOneValidByToken(sessionToken);
+  const userObject = await user.findOneById(sessionObject.user_id);
+
+  request.context = {
+    ...request.context,
+    user: userObject,
+  };
+}
+
+async function injectAnonymousUser(request) {
+  const anonymousUserObject = {
+    features: ["read:activation_token", "create:session", "create:user"],
+  };
+
+  request.context = {
+    ...request.context,
+    user: anonymousUserObject,
+  };
+}
+
+function canRequest(feature) {
+  return function canRequestMiddleware(request, response, next) {
+    const userTryingToRequest = request.context.user;
+
+    if (authorization.can({ user: userTryingToRequest, feature })) {
+      return next();
+    }
+
+    throw new ForbiddenError({
+      message: `Access denied. Your account does not have the required permissions for the '${feature}' feature.`,
+      action:
+        "Please upgrade your subscription plan or contact your organization administrator to request access.",
+    });
+  };
+}
+
 const controller = {
   errorHandlers: {
     onNoMatch: onNoMatchHandler,
@@ -58,6 +117,8 @@ const controller = {
   },
   setSessionCookie,
   clearSessionCookie,
+  injectAnonymousOrUser,
+  canRequest,
 };
 
 export default controller;

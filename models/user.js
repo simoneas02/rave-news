@@ -3,17 +3,17 @@ import password from "models/password";
 import { ValidationError } from "errors/validationError";
 import { NotFoundError } from "errors/notFoundError";
 
-async function runInsertQuery({ username, email, password }) {
+async function runInsertQuery({ username, email, password, features }) {
   const results = await database.query({
     text: `
       INSERT INTO 
-        users (username, email, password) 
+        users (username, email, password, features) 
       VALUES 
-        ($1, $2, $3)
+        ($1, $2, $3, $4)
       RETURNING
         *
       ;`,
-    values: [username, email, password],
+    values: [username, email, password, features],
   });
 
   return results.rows[0];
@@ -123,6 +123,44 @@ async function runUpdateQuery({ id, username, email, password }) {
   return results.rows[0];
 }
 
+async function updateFeaturesQuery({ userId, features }) {
+  const results = await database.query({
+    text: `
+      UPDATE
+        users
+      SET
+        features = $2,
+        updated_at = timezone('utc', now())
+      WHERE
+        id = $1
+      RETURNING
+        *
+    ;`,
+    values: [userId, features],
+  });
+
+  return results.rows[0];
+}
+
+async function addFeaturesQuery({ userId, features }) {
+  const results = await database.query({
+    text: `
+      UPDATE
+        users
+      SET
+        features = array_cat(features, $2),
+        updated_at = timezone('utc', now())
+      WHERE
+        id = $1
+      RETURNING
+        *
+    ;`,
+    values: [userId, features],
+  });
+
+  return results.rows[0];
+}
+
 async function create(userInputValues) {
   const { username, email } = userInputValues;
 
@@ -137,6 +175,7 @@ async function create(userInputValues) {
   });
 
   await hashPasswordInObject(userInputValues);
+  injectDefaultFeaturesInObject(userInputValues);
 
   const newUser = await runInsertQuery(userInputValues);
   return newUser;
@@ -187,11 +226,26 @@ async function findOneById(id) {
   return await runSelectById(id);
 }
 
+function injectDefaultFeaturesInObject(userInputValues) {
+  userInputValues.features = ["read:activation_token"];
+}
+
+async function setFeatures({ userId, features }) {
+  return await updateFeaturesQuery({ userId, features });
+}
+
+async function addFeatures({ userId, features }) {
+  return await addFeaturesQuery({ userId, features });
+}
+
 const user = {
   create,
   update,
   findeOneByUsername,
   findOneByEmail,
   findOneById,
+  setFeatures,
+  addFeatures,
 };
+
 export default user;

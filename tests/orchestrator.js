@@ -2,9 +2,10 @@ import retry from "async-retry";
 import { faker } from "@faker-js/faker";
 import database from "infra/database.js";
 import migrator from "models/migrator";
-import { STATUS_URL } from "./integration/api/v1/status/get.test";
+import { STATUS_URL, ACTIVATIONS_URL } from "tests/consts";
 import user from "models/user";
 import session from "models/session";
+import activation from "models/activation";
 
 const EMAIL_HTTP_URL = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
 
@@ -64,6 +65,14 @@ async function createUser(userObject) {
   });
 }
 
+async function activateUser(userId) {
+  return await activation.activateUserByUserId(userId);
+}
+
+async function addFeaturesToUser({ userId, features }) {
+  return await user.addFeatures({ userId, features });
+}
+
 async function createSession(userId) {
   return await session.create(userId);
 }
@@ -73,8 +82,12 @@ async function deleteAllEmails() {
 }
 
 async function getLastEmail() {
-  const emailListReponse = await fetch(`${EMAIL_HTTP_URL}/messages`);
-  const emailListBody = await emailListReponse.json();
+  const emailListResponse = await fetch(`${EMAIL_HTTP_URL}/messages`);
+  const emailListBody = await emailListResponse.json();
+
+  if (emailListBody.length === 0) {
+    return null;
+  }
 
   const lastEmailItem = emailListBody.at(-1);
 
@@ -88,6 +101,12 @@ async function getLastEmail() {
   return lastEmailItem;
 }
 
+async function extractUUID(text) {
+  const match = text.match(/[0-9a-fA-F-]{36}/);
+
+  return match ? match[0] : null;
+}
+
 const orchestrator = {
   waitForAllServices,
   clearDatabase,
@@ -96,6 +115,9 @@ const orchestrator = {
   createSession,
   deleteAllEmails,
   getLastEmail,
+  extractUUID,
+  activateUser,
+  addFeaturesToUser,
 };
 
 export default orchestrator;

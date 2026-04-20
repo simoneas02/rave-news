@@ -1,7 +1,6 @@
 import { version as uuidVersion } from "uuid";
 import orchestrator from "tests/orchestrator";
-
-export const USERS_URL = `${process.env.API_URL}/users`;
+import { USERS_URL } from "tests/consts";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -12,7 +11,7 @@ beforeAll(async () => {
 describe("GET /api/v1/users/username", () => {
   describe("Anonymous user", () => {
     test("With exact case match", async () => {
-      const createdUser = await orchestrator.createUser({
+      await orchestrator.createUser({
         username: "CaseMatch",
       });
 
@@ -21,13 +20,11 @@ describe("GET /api/v1/users/username", () => {
       expect(response.status).toBe(200);
 
       const responseBody = await response.json();
-      const { email } = createdUser;
 
       expect(responseBody).toEqual({
         id: responseBody.id,
         username: "CaseMatch",
-        email,
-        password: responseBody.password,
+        features: ["read:activation_token"],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -38,7 +35,7 @@ describe("GET /api/v1/users/username", () => {
     });
 
     test("With case mismatch", async () => {
-      const createdUser = await orchestrator.createUser({
+      await orchestrator.createUser({
         username: "CaseMismatch",
       });
 
@@ -47,13 +44,11 @@ describe("GET /api/v1/users/username", () => {
       expect(response.status).toBe(200);
 
       const responseBody = await response.json();
-      const { email } = createdUser;
 
       expect(responseBody).toEqual({
         id: responseBody.id,
         username: "CaseMismatch",
-        email,
-        password: responseBody.password,
+        features: ["read:activation_token"],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });

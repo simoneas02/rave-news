@@ -1,9 +1,11 @@
 export class MethodNotAllowedError extends Error {
-  constructor() {
-    super("This method is not allowed for this endpoint.");
+  constructor({ cause, message, action }) {
+    super(message || "This method is not allowed for this endpoint.", {
+      cause,
+    });
     this.name = "MethodNotAllowedError";
     this.action =
-      "Verify that the HTTP method sent is valid for this endpoint.";
+      action || "Verify that the HTTP method sent is valid for this endpoint.";
     this.statusCode = 405;
   }
 
