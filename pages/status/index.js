@@ -23,14 +23,14 @@ function DatabaseStatus({ isLoading, data }) {
 
   if (!isLoading && data) {
     const { version, max_connections, opened_connections, database_name } =
-      data.dependencies;
+      data.dependencies.database ?? {};
 
     databaseStatusInformation = (
       <>
-        <div>Version: {version}</div>
+        {version && <div>Version: {version}</div>}
         <div>Opened Connections: {opened_connections}</div>
         <div>Max Connections: {max_connections}</div>
-        <div>Database Name: {database_name}</div>
+        {database_name && <div>Database Name: {database_name}</div>}
       </>
     );
   }

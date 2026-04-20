@@ -7,7 +7,7 @@ function getOrigin() {
     return `https://${process.env?.VERCEL_URL}`;
   }
 
-  return `https://rave-news.com`;
+  return `https://rave-news.simone.dev.br/`;
 }
 
 const webserver = {
