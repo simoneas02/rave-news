@@ -18,6 +18,10 @@ A community platform for rave and electronic music culture: events, line-ups, re
 - CSS Modules
 - Jest for testing
 
+## Docs
+
+- [Registration Flow](docs/diagrams/use-cases/registration-flow.md) — sequence diagram of the full user registration, activation, and login flow
+
 ## Running locally
 
 ```bash
