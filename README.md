@@ -1,24 +1,33 @@
-# 🔊 Rave News: The Electronic Music Scene Hub
+# Rave News
 
-## Project Goal
+A community platform for rave and electronic music culture: events, line-ups, releases, and underground news, all in one place.
 
-Rave News is a project dedicated to connecting and informing rave and festival enthusiasts around the globe. Its primary goal is to **build a focused, community-driven platform** for sharing, discussing, and curating content related to Rave culture and electronic music (from local indoor events to major global festivals).
+## Features
 
-## Value Proposition
+- **User accounts** — register, activate via email, and authenticate with hashed passwords
+- **Session management** — secure login/logout flow backed by the database
+- **Live status page** — real-time monitoring of the API and database health, auto-refreshed every 2 seconds
+- **Database migrations** — versioned schema changes with node-pg-migrate, no manual SQL
+- **REST API** — clean `v1` routes for users, sessions, activations, and system status
 
-The platform addresses the need for a central, authentic source of information, free from the noise of major social media networks. It offers:
+## Stack
 
-- **Authentic Content:** Reviews, stories, and news sourced directly from the community.
-- **Discovery:** A dedicated place to find new releases, line-ups, and underground events.
-- **Community:** A platform where electronic music enthusiasts can connect and share experiences.
+- Next.js + React
+- PostgreSQL (via Neon) + pg
+- Nodemailer and Resend for transactional email
+- CSS Modules
+- Jest for testing
 
-## Target Audience
+## Docs
 
-- **Ravers & Music Fans:** Seeking reliable event information, reviews, and cultural insights.
-- **DJs & Producers:** Looking for community feedback, sharing new releases, and promoting events.
+- [Registration Flow](docs/diagrams/use-cases/registration-flow.md) — sequence diagram of the full user registration, activation, and login flow
 
-## Technical Stack
+## Running locally
 
-- **Frontend:** React/ Next.js
-- **Styling:** CSS Module
-- **Backend/Database:** Node.js, PostgreSQL, pg, node-pg-migrate, Neon
+```bash
+npm install
+docker compose -f infra/compose.yaml up -d  # starts PostgreSQL
+npm run dev
+```
+
+Migrations run automatically on startup. The status page at `/status` confirms everything is healthy.
