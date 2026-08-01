@@ -22,7 +22,9 @@ const jestConfig = async () => {
   })();
 
   // We tell Jest: "Ignore everything in node_modules EXCEPT @faker-js"
-  config.transformIgnorePatterns = ["/node_modules/(?!(@faker-js)/)"];
+  config.transformIgnorePatterns = [
+    "/node_modules/(?!(@faker-js|node-pg-migrate|glob|jiti)/)",
+  ];
 
   return config;
 };
